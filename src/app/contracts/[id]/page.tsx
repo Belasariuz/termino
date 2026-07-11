@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Contract } from "@/lib/contracts";
+import { getUrgencyStatus, URGENCY_STYLES, type Contract } from "@/lib/contracts";
 
 function formatDatum(datum: string) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -101,10 +101,22 @@ export default async function ContractDetailPage({
         )}
       </div>
 
-      <div className="mb-6 rounded-md bg-white p-4 text-sm text-gray-600 shadow-sm">
+      <div className="mb-6 flex items-center justify-between rounded-md bg-white p-4 text-sm text-gray-600 shadow-sm">
         <p>
           Opzegdeadline: <span className="font-medium text-gray-900">{formatDatum(contract.opzegdeadline)}</span>
         </p>
+        {(() => {
+          const status = getUrgencyStatus(contract.opzegdeadline);
+          const style = URGENCY_STYLES[status];
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
+            >
+              <span className={`h-2 w-2 rounded-full ${style.dot}`} />
+              {style.label}
+            </span>
+          );
+        })()}
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-gray-900">

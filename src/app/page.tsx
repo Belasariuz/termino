@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
-import type { Contract } from "@/lib/contracts";
+import { getUrgencyStatus, URGENCY_STYLES, type Contract } from "@/lib/contracts";
 
 function formatDatum(datum: string) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -60,6 +60,7 @@ export default async function Home() {
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
+                <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Partij</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Einddatum</th>
@@ -70,33 +71,46 @@ export default async function Home() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {contracts.map((contract) => (
-                <tr key={contract.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    <Link href={`/contracts/${contract.id}`} className="block hover:underline">
-                      {contract.partij}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{contract.type}</td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {formatDatum(contract.einddatum)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {contract.opzegtermijn_dagen} dagen
-                  </td>
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {formatDatum(contract.opzegdeadline)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {contract.verlengingswijze === "stilzwijgend"
-                      ? "Stilzwijgend"
-                      : "Actief"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {formatBedrag(contract.contractwaarde)}
-                  </td>
-                </tr>
-              ))}
+              {contracts.map((contract) => {
+                const status = getUrgencyStatus(contract.opzegdeadline);
+                const style = URGENCY_STYLES[status];
+
+                return (
+                  <tr key={contract.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
+                      >
+                        <span className={`h-2 w-2 rounded-full ${style.dot}`} />
+                        {style.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      <Link href={`/contracts/${contract.id}`} className="block hover:underline">
+                        {contract.partij}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{contract.type}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {formatDatum(contract.einddatum)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {contract.opzegtermijn_dagen} dagen
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      {formatDatum(contract.opzegdeadline)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {contract.verlengingswijze === "stilzwijgend"
+                        ? "Stilzwijgend"
+                        : "Actief"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {formatBedrag(contract.contractwaarde)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
