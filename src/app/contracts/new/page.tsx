@@ -46,6 +46,7 @@ export default function NewContractPage() {
   const [pdfPath, setPdfPath] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<Confidence | null>(null);
   const [reasoning, setReasoning] = useState<Reasoning | null>(null);
+  const [reviewConfirmed, setReviewConfirmed] = useState(false);
 
   const [partij, setPartij] = useState("");
   const [type, setType] = useState("");
@@ -110,6 +111,7 @@ export default function NewContractPage() {
       );
       setConfidence(fields.confidence ?? null);
       setReasoning(fields.reasoning ?? null);
+      setReviewConfirmed(false);
     } catch (err) {
       setError(
         err instanceof Error
@@ -149,6 +151,7 @@ export default function NewContractPage() {
       pdf_url: pdfPath,
       ai_confidence: confidence,
       ai_reasoning: reasoning,
+      gevalideerd: confidence ? reviewConfirmed : true,
     });
 
     if (insertError) {
@@ -298,6 +301,26 @@ export default function NewContractPage() {
             className={fieldClass("contractwaarde")}
           />
         </div>
+
+        {confidence && !reviewConfirmed && (
+          <div className="flex items-start justify-between gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+            <div className="flex items-start gap-2">
+              <span aria-hidden>⚠️</span>
+              <span>
+                Controleer de automatisch ingevulde velden voordat je opslaat,
+                vooral de velden met een gele achtergrond. Je kunt het contract
+                ook later nog aanpassen via de contractpagina.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReviewConfirmed(true)}
+              className="shrink-0 text-xs font-medium text-amber-700 underline hover:text-amber-900"
+            >
+              Verbergen
+            </button>
+          </div>
+        )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 

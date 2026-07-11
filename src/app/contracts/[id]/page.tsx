@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUrgencyStatus, URGENCY_STYLES, type Contract } from "@/lib/contracts";
+import { DeleteContractButton } from "./delete-contract-button";
+import { ValidateButton } from "./validate-button";
 
 function formatDatum(datum: string) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -89,17 +91,40 @@ export default async function ContractDetailPage({
 
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">{contract.partij}</h1>
-        {pdfUrl && (
-          <a
-            href={pdfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="flex items-center gap-3">
+          {pdfUrl && (
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Origineel PDF bekijken
+            </a>
+          )}
+          <Link
+            href={`/contracts/${contract.id}/edit`}
             className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            Origineel PDF bekijken
-          </a>
-        )}
+            Bewerken
+          </Link>
+          <DeleteContractButton
+            contractId={contract.id}
+            contractPartij={contract.partij}
+            pdfPath={contract.pdf_url}
+          />
+        </div>
       </div>
+
+      {!contract.gevalideerd && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          <span>
+            ⚠️ Dit contract is nog niet gevalideerd — de gegevens zijn automatisch
+            door AI ingevuld en nog niet expliciet gecontroleerd.
+          </span>
+          <ValidateButton contractId={contract.id} />
+        </div>
+      )}
 
       <div className="mb-6 flex items-center justify-between rounded-md bg-white p-4 text-sm text-gray-600 shadow-sm">
         <p>

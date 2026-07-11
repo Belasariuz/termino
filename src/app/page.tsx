@@ -19,6 +19,93 @@ function formatBedrag(bedrag: number | null) {
   }).format(bedrag);
 }
 
+function computeStats(contracts: Contract[]) {
+  const totalCount = contracts.length;
+  const totalValue = contracts.reduce((sum, c) => sum + (c.contractwaarde ?? 0), 0);
+  const needsValidation = contracts.filter((c) => !c.gevalideerd).length;
+  const needsAttention = contracts.filter((c) => {
+    const status = getUrgencyStatus(c.opzegdeadline);
+    return status === "urgent" || status === "verlopen";
+  }).length;
+
+  const byCategory = new Map<string, { count: number; value: number }>();
+  for (const c of contracts) {
+    const key = c.type || "Onbekend";
+    const entry = byCategory.get(key) ?? { count: 0, value: 0 };
+    entry.count += 1;
+    entry.value += c.contractwaarde ?? 0;
+    byCategory.set(key, entry);
+  }
+  const categories = Array.from(byCategory.entries())
+    .map(([type, data]) => ({ type, ...data }))
+    .sort((a, b) => b.value - a.value);
+
+  return { totalCount, totalValue, needsValidation, needsAttention, categories };
+}
+
+function StatsOverview({ stats }: { stats: ReturnType<typeof computeStats> }) {
+  return (
+    <div className="mb-8 space-y-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <p className="text-xs font-medium text-gray-500">Totaal aantal contracten</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.totalCount}</p>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <p className="text-xs font-medium text-gray-500">Totale contractwaarde</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900">
+            {formatBedrag(stats.totalValue)}
+          </p>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <p className="text-xs font-medium text-gray-500">Nog te valideren</p>
+          <p
+            className={`mt-1 text-2xl font-semibold ${
+              stats.needsValidation > 0 ? "text-amber-600" : "text-gray-900"
+            }`}
+          >
+            {stats.needsValidation}
+          </p>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <p className="text-xs font-medium text-gray-500">Vragen om actie (≤ 30 dagen)</p>
+          <p
+            className={`mt-1 text-2xl font-semibold ${
+              stats.needsAttention > 0 ? "text-red-600" : "text-gray-900"
+            }`}
+          >
+            {stats.needsAttention}
+          </p>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="border-b border-gray-100 px-4 py-3">
+          <h2 className="text-sm font-semibold text-gray-900">Per categorie</h2>
+        </div>
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-50 text-gray-500">
+            <tr>
+              <th className="px-4 py-2 font-medium">Categorie</th>
+              <th className="px-4 py-2 font-medium">Aantal</th>
+              <th className="px-4 py-2 font-medium">Totale waarde</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {stats.categories.map((category) => (
+              <tr key={category.type}>
+                <td className="px-4 py-2 text-gray-900">{category.type}</td>
+                <td className="px-4 py-2 text-gray-600">{category.count}</td>
+                <td className="px-4 py-2 text-gray-600">{formatBedrag(category.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default async function Home() {
   const supabase = await createClient();
   const {
@@ -50,6 +137,10 @@ export default async function Home() {
           <SignOutButton />
         </div>
       </div>
+
+      {contracts && contracts.length > 0 && (
+        <StatsOverview stats={computeStats(contracts)} />
+      )}
 
       {!contracts || contracts.length === 0 ? (
         <div className="flex flex-col items-center rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
@@ -101,8 +192,16 @@ export default async function Home() {
                       </span>
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900">
-                      <Link href={`/contracts/${contract.id}`} className="block hover:underline">
+                      <Link
+                        href={`/contracts/${contract.id}`}
+                        className="flex items-center gap-1.5 hover:underline"
+                      >
                         {contract.partij}
+                        {!contract.gevalideerd && (
+                          <span title="Nog niet gevalideerd" aria-label="Nog niet gevalideerd">
+                            ⚠️
+                          </span>
+                        )}
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{contract.type}</td>
