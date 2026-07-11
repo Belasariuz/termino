@@ -61,8 +61,20 @@ export default function NewContractPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setExtracting(true);
     setError(null);
+
+    if (file.type !== "application/pdf") {
+      setError("Alleen PDF-bestanden worden ondersteund.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setError("Het bestand is groter dan 20 MB. Upload een kleinere PDF.");
+      e.target.value = "";
+      return;
+    }
+
+    setExtracting(true);
 
     try {
       const formData = new FormData();
@@ -74,11 +86,16 @@ export default function NewContractPage() {
       });
       const data = await res.json();
 
+      // De PDF kan al geupload zijn, ook als de AI-extractie zelf mislukte.
+      // Bewaar het pad zodat het bestand niet kwijtraakt en het contract
+      // alsnog handmatig kan worden opgeslagen met de PDF eraan gekoppeld.
+      if (data.pdf_url) {
+        setPdfPath(data.pdf_url);
+      }
+
       if (!res.ok) {
         throw new Error(data.error ?? "AI-extractie is mislukt.");
       }
-
-      setPdfPath(data.pdf_url);
       const fields: ExtractedFields = data.fields;
       setPartij(fields.partij ?? "");
       setType(fields.type ?? "");
