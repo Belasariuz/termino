@@ -71,9 +71,11 @@ export default async function Home() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {contracts.map((contract) => (
-                <tr key={contract.id}>
+                <tr key={contract.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {contract.partij}
+                    <Link href={`/contracts/${contract.id}`} className="block hover:underline">
+                      {contract.partij}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{contract.type}</td>
                   <td className="px-4 py-3 text-gray-600">

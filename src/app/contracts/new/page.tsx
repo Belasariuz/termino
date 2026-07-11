@@ -4,19 +4,112 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+type Confidence = {
+  partij: number;
+  type: number;
+  begindatum: number;
+  einddatum: number;
+  opzegtermijn_dagen: number;
+  verlengingswijze: number;
+  contractwaarde: number;
+};
+
+type Reasoning = {
+  partij: string;
+  type: string;
+  begindatum: string;
+  einddatum: string;
+  opzegtermijn_dagen: string;
+  verlengingswijze: string;
+  contractwaarde: string;
+};
+
+type ExtractedFields = {
+  partij: string;
+  type: string;
+  begindatum: string;
+  einddatum: string;
+  opzegtermijn_dagen: number;
+  verlengingswijze: "stilzwijgend" | "actief";
+  contractwaarde: number | null;
+  confidence: Confidence;
+  reasoning: Reasoning;
+};
+
+const LOW_CONFIDENCE_THRESHOLD = 0.7;
+
 export default function NewContractPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [pdfPath, setPdfPath] = useState<string | null>(null);
+  const [confidence, setConfidence] = useState<Confidence | null>(null);
+  const [reasoning, setReasoning] = useState<Reasoning | null>(null);
+
+  const [partij, setPartij] = useState("");
+  const [type, setType] = useState("");
+  const [begindatum, setBegindatum] = useState("");
+  const [einddatum, setEinddatum] = useState("");
+  const [opzegtermijnDagen, setOpzegtermijnDagen] = useState("");
+  const [verlengingswijze, setVerlengingswijze] = useState<"stilzwijgend" | "actief">(
+    "stilzwijgend",
+  );
+  const [contractwaarde, setContractwaarde] = useState("");
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setExtracting(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/extract-contract", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error ?? "AI-extractie is mislukt.");
+      }
+
+      setPdfPath(data.pdf_url);
+      const fields: ExtractedFields = data.fields;
+      setPartij(fields.partij ?? "");
+      setType(fields.type ?? "");
+      setBegindatum(fields.begindatum ?? "");
+      setEinddatum(fields.einddatum ?? "");
+      setOpzegtermijnDagen(String(fields.opzegtermijn_dagen ?? ""));
+      setVerlengingswijze(fields.verlengingswijze ?? "stilzwijgend");
+      setContractwaarde(
+        fields.contractwaarde !== null && fields.contractwaarde !== undefined
+          ? String(fields.contractwaarde)
+          : "",
+      );
+      setConfidence(fields.confidence ?? null);
+      setReasoning(fields.reasoning ?? null);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `AI-extractie mislukt: ${err.message}. Vul de velden handmatig in.`
+          : "AI-extractie is mislukt. Vul de velden handmatig in.",
+      );
+    } finally {
+      setExtracting(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaving(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
     const supabase = createClient();
-
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -29,15 +122,16 @@ export default function NewContractPage() {
 
     const { error: insertError } = await supabase.from("contracts").insert({
       user_id: user.id,
-      partij: formData.get("partij"),
-      type: formData.get("type"),
-      begindatum: formData.get("begindatum"),
-      einddatum: formData.get("einddatum"),
-      opzegtermijn_dagen: Number(formData.get("opzegtermijn_dagen")),
-      verlengingswijze: formData.get("verlengingswijze"),
-      contractwaarde: formData.get("contractwaarde")
-        ? Number(formData.get("contractwaarde"))
-        : null,
+      partij,
+      type,
+      begindatum,
+      einddatum,
+      opzegtermijn_dagen: Number(opzegtermijnDagen),
+      verlengingswijze,
+      contractwaarde: contractwaarde ? Number(contractwaarde) : null,
+      pdf_url: pdfPath,
+      ai_confidence: confidence,
+      ai_reasoning: reasoning,
     });
 
     if (insertError) {
@@ -50,11 +144,45 @@ export default function NewContractPage() {
     router.refresh();
   }
 
+  function fieldClass(field: keyof Confidence) {
+    const base =
+      "w-full rounded-md border px-3 py-2 text-sm focus:border-gray-900 focus:outline-none";
+    if (confidence && confidence[field] < LOW_CONFIDENCE_THRESHOLD) {
+      return `${base} border-amber-400 bg-amber-50`;
+    }
+    return `${base} border-gray-300`;
+  }
+
   return (
     <main className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">
-        Nieuw contract
-      </h1>
+      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Nieuw contract</h1>
+      <p className="mb-6 text-sm text-gray-500">
+        Upload een PDF om de velden automatisch te laten invullen, of vul ze handmatig in.
+      </p>
+
+      <div className="mb-6 rounded-md border border-dashed border-gray-300 bg-white p-4">
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          Contract-PDF uploaden
+        </label>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileChange}
+          disabled={extracting}
+          className="w-full text-sm"
+        />
+        {extracting && (
+          <p className="mt-2 text-sm text-gray-500">
+            Bezig met analyseren van het contract...
+          </p>
+        )}
+        {confidence && (
+          <p className="mt-2 text-sm text-amber-700">
+            Velden met een gele achtergrond hebben een lage betrouwbaarheidsscore —
+            controleer deze extra goed.
+          </p>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -62,9 +190,10 @@ export default function NewContractPage() {
             Contractpartij
           </label>
           <input
-            name="partij"
             required
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            value={partij}
+            onChange={(e) => setPartij(e.target.value)}
+            className={fieldClass("partij")}
           />
         </div>
 
@@ -73,10 +202,11 @@ export default function NewContractPage() {
             Contracttype
           </label>
           <input
-            name="type"
             required
             placeholder="Bijv. huurcontract, onderhoudscontract"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className={fieldClass("type")}
           />
         </div>
 
@@ -87,9 +217,10 @@ export default function NewContractPage() {
             </label>
             <input
               type="date"
-              name="begindatum"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              value={begindatum}
+              onChange={(e) => setBegindatum(e.target.value)}
+              className={fieldClass("begindatum")}
             />
           </div>
           <div>
@@ -98,9 +229,10 @@ export default function NewContractPage() {
             </label>
             <input
               type="date"
-              name="einddatum"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              value={einddatum}
+              onChange={(e) => setEinddatum(e.target.value)}
+              className={fieldClass("einddatum")}
             />
           </div>
         </div>
@@ -112,10 +244,11 @@ export default function NewContractPage() {
             </label>
             <input
               type="number"
-              name="opzegtermijn_dagen"
               required
               min={0}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              value={opzegtermijnDagen}
+              onChange={(e) => setOpzegtermijnDagen(e.target.value)}
+              className={fieldClass("opzegtermijn_dagen")}
             />
           </div>
           <div>
@@ -123,10 +256,12 @@ export default function NewContractPage() {
               Verlengingswijze
             </label>
             <select
-              name="verlengingswijze"
               required
-              defaultValue="stilzwijgend"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              value={verlengingswijze}
+              onChange={(e) =>
+                setVerlengingswijze(e.target.value as "stilzwijgend" | "actief")
+              }
+              className={fieldClass("verlengingswijze")}
             >
               <option value="stilzwijgend">Stilzwijgend</option>
               <option value="actief">Actief</option>
@@ -141,8 +276,9 @@ export default function NewContractPage() {
           <input
             type="number"
             step="0.01"
-            name="contractwaarde"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            value={contractwaarde}
+            onChange={(e) => setContractwaarde(e.target.value)}
+            className={fieldClass("contractwaarde")}
           />
         </div>
 
@@ -151,7 +287,7 @@ export default function NewContractPage() {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || extracting}
             className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
           >
             {saving ? "Bezig met opslaan..." : "Contract opslaan"}

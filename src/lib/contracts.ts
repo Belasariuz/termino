@@ -12,5 +12,6 @@ export type Contract = {
   status: string;
   pdf_url: string | null;
   ai_confidence: Record<string, number> | null;
+  ai_reasoning: Record<string, string> | null;
   created_at: string;
 };
