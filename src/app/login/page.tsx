@@ -1,27 +1,36 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle",
-  );
+  const [wachtwoord, setWachtwoord] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
+    setErrorMessage(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+      password: wachtwoord,
     });
 
-    setStatus(error ? "error" : "sent");
+    if (error) {
+      setStatus("error");
+      setErrorMessage("E-mailadres of wachtwoord onjuist.");
+      return;
+    }
+
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -29,16 +38,14 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-lg bg-white p-8 shadow">
         <h1 className="mb-2 text-2xl font-semibold text-gray-900">Termino</h1>
         <p className="mb-6 text-sm text-gray-500">
-          Log in met een magic link. Vul je e-mailadres in en we sturen je een
-          inloglink.
+          Log in met je e-mailadres en wachtwoord.
         </p>
 
-        {status === "sent" ? (
-          <p className="rounded-md bg-green-50 p-3 text-sm text-green-700">
-            Check je inbox — we hebben een inloglink gestuurd naar {email}.
-          </p>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              E-mailadres
+            </label>
             <input
               type="email"
               required
@@ -47,20 +54,47 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
             />
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
-            >
-              {status === "sending" ? "Bezig met versturen..." : "Stuur inloglink"}
-            </button>
-            {status === "error" && (
-              <p className="text-sm text-red-600">
-                Er ging iets mis. Probeer het opnieuw.
-              </p>
-            )}
-          </form>
-        )}
+          </div>
+
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="block text-sm font-medium text-gray-700">
+                Wachtwoord
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-gray-500 hover:text-gray-900 hover:underline"
+              >
+                Wachtwoord vergeten?
+              </Link>
+            </div>
+            <input
+              type="password"
+              required
+              value={wachtwoord}
+              onChange={(e) => setWachtwoord(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={status === "sending"}
+            className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+          >
+            {status === "sending" ? "Bezig met inloggen..." : "Inloggen"}
+          </button>
+          {status === "error" && errorMessage && (
+            <p className="text-sm text-red-600">{errorMessage}</p>
+          )}
+        </form>
+
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Nog geen account?{" "}
+          <Link href="/register" className="font-medium text-gray-900 hover:underline">
+            Meld je aan
+          </Link>
+        </p>
       </div>
     </main>
   );

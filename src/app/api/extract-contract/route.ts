@@ -4,11 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const extractionSchema = {
+function buildExtractionSchema(categoryNames: string[]) {
+  return {
   type: "object",
   properties: {
     partij: { type: "string", description: "Naam van de contractpartij" },
-    type: { type: "string", description: "Type contract, bijv. huurcontract" },
+    type: {
+      type: "string",
+      enum: categoryNames,
+      description:
+        "Kies de best passende categorie uit de gegeven lijst van de gebruiker.",
+    },
     begindatum: { type: "string", description: "Begindatum in formaat YYYY-MM-DD" },
     einddatum: { type: "string", description: "Einddatum in formaat YYYY-MM-DD" },
     opzegtermijn_dagen: { type: "integer", description: "Opzegtermijn in dagen" },
@@ -81,7 +87,8 @@ const extractionSchema = {
     "reasoning",
   ],
   additionalProperties: false,
-};
+  };
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -91,6 +98,19 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Niet ingelogd." }, { status: 401 });
+  }
+
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("naam")
+    .order("naam", { ascending: true });
+
+  const categoryNames = (categories ?? []).map((c) => c.naam);
+  if (categoryNames.length === 0) {
+    return NextResponse.json(
+      { error: "Je hebt nog geen categorieën. Voeg er eerst een toe via 'Categorieën beheren'." },
+      { status: 400 },
+    );
   }
 
   const formData = await request.formData();
@@ -123,7 +143,7 @@ export async function POST(request: Request) {
       model: "claude-opus-4-8",
       max_tokens: 2048,
       output_config: {
-        format: { type: "json_schema", schema: extractionSchema },
+        format: { type: "json_schema", schema: buildExtractionSchema(categoryNames) },
       },
       messages: [
         {
@@ -139,7 +159,7 @@ export async function POST(request: Request) {
             },
             {
               type: "text",
-              text: "Extraheer de contractgegevens uit dit Nederlandse (of Engelse) huurcontract of vergelijkbaar contract. Geef per veld ook een betrouwbaarheidsscore tussen 0 en 1, waarbij 1 volledig zeker is, en een korte toelichting (1-2 zinnen, in het Nederlands) waarin je aangeeft waar in het document je dit gevonden hebt en hoe je tot deze waarde kwam. Gebruik het formaat YYYY-MM-DD voor data.",
+              text: `Extraheer de contractgegevens uit dit Nederlandse (of Engelse) huurcontract of vergelijkbaar contract. Kies voor het veld "type" de best passende categorie uit deze lijst: ${categoryNames.join(", ")}. Geef per veld ook een betrouwbaarheidsscore tussen 0 en 1, waarbij 1 volledig zeker is, en een korte toelichting (1-2 zinnen, in het Nederlands) waarin je aangeeft waar in het document je dit gevonden hebt en hoe je tot deze waarde kwam. Gebruik het formaat YYYY-MM-DD voor data.`,
             },
           ],
         },

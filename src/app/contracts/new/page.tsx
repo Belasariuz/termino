@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import type { Category } from "@/lib/contracts";
 
 type Confidence = {
   partij: number;
@@ -48,6 +50,9 @@ export default function NewContractPage() {
   const [reasoning, setReasoning] = useState<Reasoning | null>(null);
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
 
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
   const [partij, setPartij] = useState("");
   const [type, setType] = useState("");
   const [begindatum, setBegindatum] = useState("");
@@ -57,6 +62,23 @@ export default function NewContractPage() {
     "stilzwijgend",
   );
   const [contractwaarde, setContractwaarde] = useState("");
+
+  useEffect(() => {
+    async function loadCategories() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("categories")
+        .select("*")
+        .order("naam", { ascending: true })
+        .returns<Category[]>();
+      setCategories(data ?? []);
+      if (data && data.length > 0) {
+        setType((current) => current || data[0].naam);
+      }
+      setCategoriesLoading(false);
+    }
+    loadCategories();
+  }, []);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -99,7 +121,12 @@ export default function NewContractPage() {
       }
       const fields: ExtractedFields = data.fields;
       setPartij(fields.partij ?? "");
-      setType(fields.type ?? "");
+      const matchedCategory = categories.find(
+        (c) => c.naam.toLowerCase() === fields.type?.toLowerCase(),
+      );
+      if (matchedCategory) {
+        setType(matchedCategory.naam);
+      }
       setBegindatum(fields.begindatum ?? "");
       setEinddatum(fields.einddatum ?? "");
       setOpzegtermijnDagen(String(fields.opzegtermijn_dagen ?? ""));
@@ -218,16 +245,41 @@ export default function NewContractPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Contracttype
-          </label>
-          <input
-            required
-            placeholder="Bijv. huurcontract, onderhoudscontract"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className={fieldClass("type")}
-          />
+          <div className="mb-1 flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">
+              Contracttype
+            </label>
+            <Link
+              href="/categories"
+              className="text-xs text-gray-500 hover:text-gray-900 hover:underline"
+            >
+              Categorieën beheren
+            </Link>
+          </div>
+          {categoriesLoading ? (
+            <p className="text-sm text-gray-500">Bezig met laden...</p>
+          ) : categories.length === 0 ? (
+            <p className="text-sm text-amber-700">
+              Je hebt nog geen categorieën.{" "}
+              <Link href="/categories" className="underline">
+                Voeg er eerst een toe
+              </Link>
+              .
+            </p>
+          ) : (
+            <select
+              required
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className={fieldClass("type")}
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.naam}>
+                  {category.naam}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -327,7 +379,7 @@ export default function NewContractPage() {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            disabled={saving || extracting}
+            disabled={saving || extracting || categories.length === 0}
             className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
           >
             {saving ? "Bezig met opslaan..." : "Contract opslaan"}

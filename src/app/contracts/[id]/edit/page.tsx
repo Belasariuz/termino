@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import type { Contract } from "@/lib/contracts";
+import type { Category, Contract } from "@/lib/contracts";
 
 const LOW_CONFIDENCE_THRESHOLD = 0.7;
 
@@ -15,6 +16,7 @@ export default function EditContractPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<Record<string, number> | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [partij, setPartij] = useState("");
   const [type, setType] = useState("");
@@ -29,11 +31,16 @@ export default function EditContractPage() {
   useEffect(() => {
     async function loadContract() {
       const supabase = createClient();
-      const { data, error: fetchError } = await supabase
-        .from("contracts")
-        .select("*")
-        .eq("id", params.id)
-        .single<Contract>();
+      const [{ data, error: fetchError }, { data: categoryData }] = await Promise.all([
+        supabase.from("contracts").select("*").eq("id", params.id).single<Contract>(),
+        supabase
+          .from("categories")
+          .select("*")
+          .order("naam", { ascending: true })
+          .returns<Category[]>(),
+      ]);
+
+      setCategories(categoryData ?? []);
 
       if (fetchError || !data) {
         setError("Contract niet gevonden.");
@@ -133,15 +140,32 @@ export default function EditContractPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Contracttype
-          </label>
-          <input
+          <div className="mb-1 flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">
+              Contracttype
+            </label>
+            <Link
+              href="/categories"
+              className="text-xs text-gray-500 hover:text-gray-900 hover:underline"
+            >
+              Categorieën beheren
+            </Link>
+          </div>
+          <select
             required
             value={type}
             onChange={(e) => setType(e.target.value)}
             className={fieldClass("type")}
-          />
+          >
+            {!categories.some((c) => c.naam === type) && type && (
+              <option value={type}>{type} (verwijderd)</option>
+            )}
+            {categories.map((category) => (
+              <option key={category.id} value={category.naam}>
+                {category.naam}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

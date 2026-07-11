@@ -1,3 +1,10 @@
+export type Category = {
+  id: string;
+  user_id: string;
+  naam: string;
+  created_at: string;
+};
+
 export type Contract = {
   id: string;
   user_id: string;

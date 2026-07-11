@@ -124,7 +124,8 @@ export default async function Home() {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Termino</h1>
           <p className="text-sm text-gray-500">
-            Ingelogd als {user?.email}
+            Ingelogd als{" "}
+            {(user?.user_metadata?.naam as string | undefined) ?? user?.email}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -133,6 +134,12 @@ export default async function Home() {
             className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
           >
             + Nieuw contract
+          </Link>
+          <Link
+            href="/account"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Account
           </Link>
           <SignOutButton />
         </div>

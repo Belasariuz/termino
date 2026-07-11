@@ -30,16 +30,19 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
+  const isRegisterPage = request.nextUrl.pathname.startsWith("/register");
+  const isForgotPasswordPage = request.nextUrl.pathname.startsWith("/forgot-password");
   const isAuthCallback = request.nextUrl.pathname.startsWith("/auth");
   const isApiRoute = request.nextUrl.pathname.startsWith("/api");
+  const isPublicAuthPage = isLoginPage || isRegisterPage || isForgotPasswordPage;
 
-  if (!user && !isLoginPage && !isAuthCallback && !isApiRoute) {
+  if (!user && !isPublicAuthPage && !isAuthCallback && !isApiRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  if (user && isLoginPage) {
+  if (user && isPublicAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
