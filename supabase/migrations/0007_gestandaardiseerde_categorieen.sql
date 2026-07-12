@@ -1,4 +1,4 @@
--- Termino: gestandaardiseerde contractcategorieen
+-- Concq: gestandaardiseerde contractcategorieen
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 -- Bestaande vrije-tekst types omzetten naar de nieuwe vaste categorieen

@@ -1,4 +1,4 @@
--- Termino: storage bucket voor contract-PDF's + Row Level Security
+-- Concq: storage bucket voor contract-PDF's + Row Level Security
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 insert into storage.buckets (id, name, public)

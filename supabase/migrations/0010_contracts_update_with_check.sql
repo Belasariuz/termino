@@ -1,4 +1,4 @@
--- Termino: sluit gat in RLS update-policy op contracts
+-- Concq: sluit gat in RLS update-policy op contracts
 -- Zonder "with check" kan een update de rij naar een andere user_id verplaatsen,
 -- ook al mag alleen de eigenaar de update starten.
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run

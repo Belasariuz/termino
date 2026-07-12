@@ -1,4 +1,4 @@
--- Termino: aanvullende contractcategorieen (software/apps, abonnementen, telecom, lease)
+-- Concq: aanvullende contractcategorieen (software/apps, abonnementen, telecom, lease)
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 alter table public.contracts drop constraint contracts_type_check;

@@ -1,4 +1,4 @@
--- Termino: alerts-tabel voor 90/60/30-dagen e-mailherinneringen
+-- Concq: alerts-tabel voor 90/60/30-dagen e-mailherinneringen
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 create table if not exists public.alerts (

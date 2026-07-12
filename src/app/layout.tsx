@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Termino",
+  title: "Concq",
   description: "Beheer je contracten en mis nooit meer een opzegdeadline.",
 };
 

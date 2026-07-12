@@ -67,7 +67,7 @@ export default function RegisterPage() {
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm rounded-lg bg-white p-8 shadow">
         <h1 className="mb-2 text-2xl font-semibold text-gray-900">
-          Aanmelden bij Termino
+          Aanmelden bij Concq
         </h1>
         <p className="mb-6 text-sm text-gray-500">
           Maak een account aan met een e-mailadres en wachtwoord.
@@ -155,7 +155,7 @@ export default function RegisterPage() {
                 onChange={(e) => setAkkoord(e.target.checked)}
                 className="mt-0.5"
               />
-              <span>Ik ga akkoord met het gebruik van mijn gegevens door Termino.</span>
+              <span>Ik ga akkoord met het gebruik van mijn gegevens door Concq.</span>
             </label>
 
             <button
