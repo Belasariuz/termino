@@ -46,6 +46,7 @@ export default function NewContractPage() {
   const [saving, setSaving] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [pdfPath, setPdfPath] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<Confidence | null>(null);
   const [reasoning, setReasoning] = useState<Reasoning | null>(null);
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
@@ -85,15 +86,18 @@ export default function NewContractPage() {
     if (!file) return;
 
     setError(null);
+    setFileName(file.name);
 
     if (file.type !== "application/pdf") {
       setError("Alleen PDF-bestanden worden ondersteund.");
       e.target.value = "";
+      setFileName(null);
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
       setError("Het bestand is groter dan 20 MB. Upload een kleinere PDF.");
       e.target.value = "";
+      setFileName(null);
       return;
     }
 
@@ -207,16 +211,23 @@ export default function NewContractPage() {
         Upload een PDF om de velden automatisch te laten invullen, of vul ze handmatig in.
       </p>
 
-      <div className="mb-6 rounded-md border border-dashed border-gray-300 bg-white p-4">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          Contract-PDF uploaden
-        </label>
+      <label
+        htmlFor="contract-pdf-input"
+        className={`mb-6 flex cursor-pointer flex-col items-center gap-1 rounded-md border border-dashed border-gray-300 bg-white p-6 text-center hover:bg-gray-50 ${
+          extracting ? "pointer-events-none opacity-60" : ""
+        }`}
+      >
+        <span className="text-sm font-medium text-gray-700">Contract-PDF uploaden</span>
+        <span className="text-sm text-gray-500">
+          {fileName ?? "Klik om een PDF te kiezen"}
+        </span>
         <input
+          id="contract-pdf-input"
           type="file"
           accept="application/pdf"
           onChange={handleFileChange}
           disabled={extracting}
-          className="w-full text-sm"
+          className="sr-only"
         />
         {extracting && (
           <p className="mt-2 text-sm text-gray-500">
@@ -229,7 +240,7 @@ export default function NewContractPage() {
             controleer deze extra goed.
           </p>
         )}
-      </div>
+      </label>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
