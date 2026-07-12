@@ -108,9 +108,28 @@ function StatsOverview({ stats }: { stats: ReturnType<typeof computeStats> }) {
   );
 }
 
-function ContractCards({ contracts }: { contracts: Contract[] }) {
+function ContractField({
+  label,
+  children,
+  emphasize,
+}: {
+  label: string;
+  children: React.ReactNode;
+  emphasize?: boolean;
+}) {
   return (
-    <div className="space-y-3 md:hidden">
+    <div className="min-w-[7rem]">
+      <p className="text-[11px] uppercase tracking-wide text-gray-400">{label}</p>
+      <p className={emphasize ? "text-sm font-medium text-gray-900" : "text-sm text-gray-600"}>
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function ContractRows({ contracts }: { contracts: Contract[] }) {
+  return (
+    <div className="space-y-3">
       {contracts.map((contract) => {
         const status = getUrgencyStatus(contract.opzegdeadline);
         const style = URGENCY_STYLES[status];
@@ -119,39 +138,40 @@ function ContractCards({ contracts }: { contracts: Contract[] }) {
           <Link
             key={contract.id}
             href={`/contracts/${contract.id}`}
-            className="block rounded-lg border border-gray-200 bg-white p-4 hover:bg-gray-50"
+            className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-gray-200 bg-white p-4 hover:bg-gray-50"
           >
-            <div className="mb-2 flex items-start justify-between gap-2">
-              <span className="flex min-w-0 items-center gap-1.5 font-medium text-gray-900">
-                <span className="truncate">{contract.partij}</span>
-                {!contract.gevalideerd && (
-                  <span
-                    className="shrink-0"
-                    title="Nog niet gevalideerd"
-                    aria-label="Nog niet gevalideerd"
-                  >
-                    ⚠️
-                  </span>
-                )}
-              </span>
-              <span
-                className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
-              >
-                <span className={`h-2 w-2 rounded-full ${style.dot}`} />
-                {style.label}
-              </span>
-            </div>
-            <p className="text-sm text-gray-500">{contract.type}</p>
-            <div className="mt-3 flex items-center justify-between text-sm">
-              <span className="text-gray-500">Opzegdeadline</span>
-              <span className="font-medium text-gray-900">
-                {formatDatum(contract.opzegdeadline)}
-              </span>
-            </div>
-            <div className="mt-1 flex items-center justify-between text-sm">
-              <span className="text-gray-500">Waarde</span>
-              <span className="text-gray-600">{formatBedrag(contract.contractwaarde)}</span>
-            </div>
+            <span
+              className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
+            >
+              <span className={`h-2 w-2 rounded-full ${style.dot}`} />
+              {style.label}
+            </span>
+
+            <span className="flex min-w-[10rem] flex-1 items-center gap-1.5 font-medium text-gray-900">
+              <span className="truncate">{contract.partij}</span>
+              {!contract.gevalideerd && (
+                <span
+                  className="shrink-0"
+                  title="Nog niet gevalideerd"
+                  aria-label="Nog niet gevalideerd"
+                >
+                  ⚠️
+                </span>
+              )}
+            </span>
+
+            <ContractField label="Type">{contract.type}</ContractField>
+            <ContractField label="Einddatum">{formatDatum(contract.einddatum)}</ContractField>
+            <ContractField label="Opzegtermijn">
+              {contract.opzegtermijn_dagen} dagen
+            </ContractField>
+            <ContractField label="Opzegdeadline" emphasize>
+              {formatDatum(contract.opzegdeadline)}
+            </ContractField>
+            <ContractField label="Verlenging">
+              {contract.verlengingswijze === "stilzwijgend" ? "Stilzwijgend" : "Actief"}
+            </ContractField>
+            <ContractField label="Waarde">{formatBedrag(contract.contractwaarde)}</ContractField>
           </Link>
         );
       })}
@@ -222,79 +242,7 @@ export default async function Home() {
           </Link>
         </div>
       ) : (
-        <>
-          <ContractCards contracts={contracts} />
-          <div className="hidden overflow-x-auto rounded-lg border border-gray-200 bg-white md:block">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-gray-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Partij</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Einddatum</th>
-                <th className="px-4 py-3 font-medium">Opzegtermijn</th>
-                <th className="px-4 py-3 font-medium">Opzegdeadline</th>
-                <th className="px-4 py-3 font-medium">Verlenging</th>
-                <th className="px-4 py-3 font-medium">Waarde</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {contracts.map((contract) => {
-                const status = getUrgencyStatus(contract.opzegdeadline);
-                const style = URGENCY_STYLES[status];
-
-                return (
-                  <tr key={contract.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
-                      >
-                        <span className={`h-2 w-2 rounded-full ${style.dot}`} />
-                        {style.label}
-                      </span>
-                    </td>
-                    <td className="max-w-[220px] px-4 py-3 font-medium text-gray-900">
-                      <Link
-                        href={`/contracts/${contract.id}`}
-                        className="flex items-center gap-1.5 hover:underline"
-                      >
-                        <span className="truncate">{contract.partij}</span>
-                        {!contract.gevalideerd && (
-                          <span
-                            className="shrink-0"
-                            title="Nog niet gevalideerd"
-                            aria-label="Nog niet gevalideerd"
-                          >
-                            ⚠️
-                          </span>
-                        )}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{contract.type}</td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {formatDatum(contract.einddatum)}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {contract.opzegtermijn_dagen} dagen
-                    </td>
-                    <td className="px-4 py-3 font-medium text-gray-900">
-                      {formatDatum(contract.opzegdeadline)}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {contract.verlengingswijze === "stilzwijgend"
-                        ? "Stilzwijgend"
-                        : "Actief"}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {formatBedrag(contract.contractwaarde)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          </div>
-        </>
+        <ContractRows contracts={contracts} />
       )}
     </main>
   );
