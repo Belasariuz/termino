@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { opzegAlertHtml, opzegAlertOnderwerp } from "@/lib/contract-mail";
@@ -16,9 +17,20 @@ function daysUntil(dateStr: string) {
   return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+function isAuthorized(authHeader: string | null) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || !authHeader) return false;
+
+  const expected = Buffer.from(`Bearer ${cronSecret}`);
+  const actual = Buffer.from(authHeader);
+  if (expected.length !== actual.length) return false;
+
+  return timingSafeEqual(expected, actual);
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorized(authHeader)) {
     return NextResponse.json({ error: "Niet geautoriseerd." }, { status: 401 });
   }
 
