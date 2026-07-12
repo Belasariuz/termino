@@ -100,7 +100,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-10">
+    <main className="mx-auto w-full max-w-xl px-4 py-10">
       <Link href="/" className="mb-4 inline-block text-sm text-gray-500 hover:text-gray-900">
         &larr; Terug naar dashboard
       </Link>

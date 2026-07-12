@@ -79,28 +79,30 @@ function StatsOverview({ stats }: { stats: ReturnType<typeof computeStats> }) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-100 px-4 py-3">
           <h2 className="text-sm font-semibold text-gray-900">Per categorie</h2>
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-500">
-            <tr>
-              <th className="px-4 py-2 font-medium">Categorie</th>
-              <th className="px-4 py-2 font-medium">Aantal</th>
-              <th className="px-4 py-2 font-medium">Totale waarde</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {stats.categories.map((category) => (
-              <tr key={category.type}>
-                <td className="px-4 py-2 text-gray-900">{category.type}</td>
-                <td className="px-4 py-2 text-gray-600">{category.count}</td>
-                <td className="px-4 py-2 text-gray-600">{formatBedrag(category.value)}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gray-50 text-gray-500">
+              <tr>
+                <th className="px-4 py-2 font-medium">Categorie</th>
+                <th className="px-4 py-2 font-medium">Aantal</th>
+                <th className="px-4 py-2 font-medium">Totale waarde</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {stats.categories.map((category) => (
+                <tr key={category.type}>
+                  <td className="px-4 py-2 text-gray-900">{category.type}</td>
+                  <td className="px-4 py-2 text-gray-600">{category.count}</td>
+                  <td className="px-4 py-2 text-gray-600">{formatBedrag(category.value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -119,8 +121,8 @@ export default async function Home() {
     .returns<Contract[]>();
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-8 flex items-center justify-between">
+    <main className="mx-auto w-full max-w-5xl px-4 py-10">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Termino</h1>
           <p className="text-sm text-gray-500">
@@ -128,7 +130,7 @@ export default async function Home() {
             {(user?.user_metadata?.naam as string | undefined) ?? user?.email}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/contracts/new"
             className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
@@ -169,7 +171,7 @@ export default async function Home() {
           </Link>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
@@ -192,20 +194,24 @@ export default async function Home() {
                   <tr key={contract.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
+                        className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
                       >
                         <span className={`h-2 w-2 rounded-full ${style.dot}`} />
                         {style.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-medium text-gray-900">
+                    <td className="max-w-[220px] px-4 py-3 font-medium text-gray-900">
                       <Link
                         href={`/contracts/${contract.id}`}
                         className="flex items-center gap-1.5 hover:underline"
                       >
-                        {contract.partij}
+                        <span className="truncate">{contract.partij}</span>
                         {!contract.gevalideerd && (
-                          <span title="Nog niet gevalideerd" aria-label="Nog niet gevalideerd">
+                          <span
+                            className="shrink-0"
+                            title="Nog niet gevalideerd"
+                            aria-label="Nog niet gevalideerd"
+                          >
                             ⚠️
                           </span>
                         )}

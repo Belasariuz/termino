@@ -84,14 +84,16 @@ export default async function ContractDetailPage({
   ];
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
+    <main className="mx-auto w-full max-w-3xl px-4 py-10">
       <Link href="/" className="mb-4 inline-block text-sm text-gray-500 hover:text-gray-900">
         &larr; Terug naar dashboard
       </Link>
 
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">{contract.partij}</h1>
-        <div className="flex items-center gap-3">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="min-w-0 truncate text-2xl font-semibold text-gray-900">
+          {contract.partij}
+        </h1>
+        <div className="flex flex-wrap items-center gap-3">
           {pdfUrl && (
             <a
               href={pdfUrl}

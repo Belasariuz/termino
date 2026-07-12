@@ -201,7 +201,7 @@ export default function NewContractPage() {
   }
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-10">
+    <main className="mx-auto w-full max-w-xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-semibold text-gray-900">Nieuw contract</h1>
       <p className="mb-6 text-sm text-gray-500">
         Upload een PDF om de velden automatisch te laten invullen, of vul ze handmatig in.
@@ -282,7 +282,7 @@ export default function NewContractPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Begindatum
@@ -309,7 +309,7 @@ export default function NewContractPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Opzegtermijn (dagen)
