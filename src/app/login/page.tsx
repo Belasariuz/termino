@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm rounded-lg bg-white p-8 shadow">
-        <h1 className="mb-2 text-2xl font-semibold text-gray-900">Concq</h1>
+        <h1 className="mb-2 text-2xl font-semibold text-gray-900">Conq</h1>
         <p className="mb-6 text-sm text-gray-500">
           Log in met je e-mailadres en wachtwoord.
         </p>

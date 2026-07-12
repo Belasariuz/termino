@@ -43,7 +43,7 @@ export function opzegAlertHtml(params: {
         </tr>
       </table>
       <p style="color: #6b7280; font-size: 14px;">
-        Deze e-mail is automatisch verstuurd door Concq.
+        Deze e-mail is automatisch verstuurd door Conq.
       </p>
     </div>
   `;

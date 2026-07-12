@@ -1,4 +1,4 @@
--- Concq: alerts-tabel voor 90/60/30-dagen e-mailherinneringen
+-- Conq: alerts-tabel voor 90/60/30-dagen e-mailherinneringen
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 create table if not exists public.alerts (

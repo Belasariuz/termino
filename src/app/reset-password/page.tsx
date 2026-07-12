@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
           Nieuw wachtwoord instellen
         </h1>
         <p className="mb-6 text-sm text-gray-500">
-          Kies een nieuw wachtwoord voor je Concq-account.
+          Kies een nieuw wachtwoord voor je Conq-account.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -11,7 +11,7 @@ export function DeleteAccountButton() {
 
   async function handleDelete() {
     const firstConfirm = window.confirm(
-      "Weet je zeker dat je je Concq-account wilt verwijderen? Al je contracten en gegevens worden definitief gewist.",
+      "Weet je zeker dat je je Conq-account wilt verwijderen? Al je contracten en gegevens worden definitief gewist.",
     );
     if (!firstConfirm) return;
 

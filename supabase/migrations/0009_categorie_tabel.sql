@@ -1,4 +1,4 @@
--- Concq: door de gebruiker beheerde categorieen (i.p.v. vaste lijst)
+-- Conq: door de gebruiker beheerde categorieen (i.p.v. vaste lijst)
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 -- De oude vaste lijst-constraint vervalt: categorieen worden nu per

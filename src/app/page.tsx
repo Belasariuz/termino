@@ -195,7 +195,7 @@ export default async function Home() {
     <main className="mx-auto w-full max-w-5xl px-4 py-10">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Concq</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Conq</h1>
           <p className="text-sm text-gray-500">
             Ingelogd als{" "}
             {(user?.user_metadata?.naam as string | undefined) ?? user?.email}
@@ -231,7 +231,7 @@ export default async function Home() {
             Nog geen contracten
           </h2>
           <p className="mb-6 max-w-sm text-sm text-gray-500">
-            Voeg je eerste contract toe door een PDF te uploaden — Concq haalt de
+            Voeg je eerste contract toe door een PDF te uploaden — Conq haalt de
             belangrijkste velden er automatisch uit, of vul ze handmatig in.
           </p>
           <Link

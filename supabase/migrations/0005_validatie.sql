@@ -1,4 +1,4 @@
--- Concq: validatiestatus voor AI-geextraheerde contracten
+-- Conq: validatiestatus voor AI-geextraheerde contracten
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 alter table public.contracts

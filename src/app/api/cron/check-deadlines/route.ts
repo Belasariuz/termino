@@ -74,7 +74,7 @@ export async function GET(request: Request) {
     }
 
     const { error: sendError } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL ?? "Concq <onboarding@resend.dev>",
+      from: process.env.RESEND_FROM_EMAIL ?? "Conq <onboarding@resend.dev>",
       to: authUser.user.email,
       subject: opzegAlertOnderwerp(contract.partij, type),
       html: opzegAlertHtml({

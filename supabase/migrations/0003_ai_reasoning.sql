@@ -1,4 +1,4 @@
--- Concq: kolom voor AI-verantwoording per veld
+-- Conq: kolom voor AI-verantwoording per veld
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 alter table public.contracts

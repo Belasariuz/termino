@@ -1,4 +1,4 @@
--- Concq: contracts-tabel + Row Level Security
+-- Conq: contracts-tabel + Row Level Security
 -- Plak dit script in Supabase Dashboard -> SQL Editor -> Run
 
 create table if not exists public.contracts (
