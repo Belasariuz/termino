@@ -47,23 +47,23 @@ export const URGENCY_STYLES: Record<
   { dot: string; badge: string; label: string }
 > = {
   verlopen: {
-    dot: "bg-red-600",
-    badge: "bg-red-100 text-red-800",
+    dot: "bg-[#DC2648]",
+    badge: "bg-[rgba(220,38,72,0.1)] text-[#DC2648]",
     label: "Deadline verstreken",
   },
   urgent: {
-    dot: "bg-red-500",
-    badge: "bg-red-100 text-red-700",
+    dot: "bg-[#DC2648]",
+    badge: "bg-[rgba(220,38,72,0.1)] text-[#DC2648]",
     label: "Binnen 30 dagen",
   },
   aandacht: {
-    dot: "bg-amber-500",
-    badge: "bg-amber-100 text-amber-800",
+    dot: "bg-[#B4740E]",
+    badge: "bg-[rgba(180,116,14,0.1)] text-[#B4740E]",
     label: "Binnen 90 dagen",
   },
   rustig: {
-    dot: "bg-green-500",
-    badge: "bg-green-100 text-green-800",
+    dot: "bg-[#16A34A]",
+    badge: "bg-[rgba(22,163,74,0.1)] text-[#16A34A]",
     label: "Ruim op tijd",
   },
 };

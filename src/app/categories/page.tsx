@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/contracts";
+import { BackLink, Card, inputClass, primaryButtonClass } from "@/components/ui";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -100,13 +100,13 @@ export default function CategoriesPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-xl px-4 py-10">
-      <Link href="/" className="mb-4 inline-block text-sm text-gray-500 hover:text-gray-900">
-        &larr; Terug naar dashboard
-      </Link>
+    <main className="mx-auto w-full max-w-xl px-4 py-10 sm:px-8">
+      <BackLink href="/">Terug naar dashboard</BackLink>
 
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Categorieën</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <h1 className="mb-2 font-display text-2xl font-bold tracking-tight text-[#12141C]">
+        Categorieën
+      </h1>
+      <p className="mb-7 text-sm text-[#6B7383]">
         Beheer de contractcategorieën die je bij het invoeren van een contract kunt
         kiezen. Een categorie die nog in gebruik is bij een contract kan niet
         verwijderd worden.
@@ -118,43 +118,45 @@ export default function CategoriesPage() {
           placeholder="Nieuwe categorie, bijv. Facilitaire dienst"
           value={nieuweNaam}
           onChange={(e) => setNieuweNaam(e.target.value)}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+          className={inputClass + " flex-1"}
         />
         <button
           type="submit"
           disabled={adding || !nieuweNaam.trim()}
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+          className={primaryButtonClass}
         >
           {adding ? "Bezig..." : "Toevoegen"}
         </button>
       </form>
 
       {error && (
-        <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        <p className="mb-4 rounded-[11px] bg-[rgba(220,38,72,0.1)] p-3.5 text-sm text-[#DC2648]">
+          {error}
+        </p>
       )}
 
       {loading ? (
-        <p className="text-sm text-gray-500">Bezig met laden...</p>
+        <p className="text-sm text-[#6B7383]">Bezig met laden...</p>
       ) : categories.length === 0 ? (
-        <p className="text-sm text-gray-500">Nog geen categorieën toegevoegd.</p>
+        <p className="text-sm text-[#6B7383]">Nog geen categorieën toegevoegd.</p>
       ) : (
-        <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
+        <Card className="divide-y divide-[#EEF0F5] overflow-hidden">
           {categories.map((category) => (
-            <li
+            <div
               key={category.id}
-              className="flex items-center justify-between px-4 py-3 text-sm"
+              className="flex items-center justify-between px-5 py-3.5 text-sm"
             >
-              <span className="text-gray-900">{category.naam}</span>
+              <span className="text-[#12141C]">{category.naam}</span>
               <button
                 onClick={() => handleDelete(category)}
                 disabled={deletingId === category.id}
-                className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                className="text-xs font-semibold text-[#DC2648] hover:underline disabled:opacity-50"
               >
                 {deletingId === category.id ? "Bezig..." : "Verwijderen"}
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </Card>
       )}
     </main>
   );

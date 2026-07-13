@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
 import { getUrgencyStatus, URGENCY_STYLES, type Contract } from "@/lib/contracts";
+import { Logo } from "@/components/logo";
+import { Card, primaryButtonClass } from "@/components/ui";
 
 function formatDatum(datum: string) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -43,67 +45,68 @@ function computeStats(contracts: Contract[]) {
   return { totalCount, totalValue, needsValidation, needsAttention, categories };
 }
 
+function StatTile({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: React.ReactNode;
+  tone?: "default" | "warning" | "danger";
+}) {
+  const toneClass =
+    tone === "warning" ? "text-[#B4740E]" : tone === "danger" ? "text-[#DC2648]" : "text-[#12141C]";
+  return (
+    <Card className="p-4">
+      <p className="text-xs font-medium text-[#8A93A3]">{label}</p>
+      <p className={`mt-1 font-display text-2xl font-bold ${toneClass}`}>{value}</p>
+    </Card>
+  );
+}
+
 function StatsOverview({ stats }: { stats: ReturnType<typeof computeStats> }) {
   return (
     <div className="mb-8 space-y-4">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-500">Totaal aantal contracten</p>
-          <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.totalCount}</p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-500">Totale contractwaarde</p>
-          <p className="mt-1 text-2xl font-semibold text-gray-900">
-            {formatBedrag(stats.totalValue)}
-          </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-500">Nog te valideren</p>
-          <p
-            className={`mt-1 text-2xl font-semibold ${
-              stats.needsValidation > 0 ? "text-amber-600" : "text-gray-900"
-            }`}
-          >
-            {stats.needsValidation}
-          </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-500">Vragen om actie (≤ 30 dagen)</p>
-          <p
-            className={`mt-1 text-2xl font-semibold ${
-              stats.needsAttention > 0 ? "text-red-600" : "text-gray-900"
-            }`}
-          >
-            {stats.needsAttention}
-          </p>
-        </div>
+        <StatTile label="Totaal aantal contracten" value={stats.totalCount} />
+        <StatTile label="Totale contractwaarde" value={formatBedrag(stats.totalValue)} />
+        <StatTile
+          label="Nog te valideren"
+          value={stats.needsValidation}
+          tone={stats.needsValidation > 0 ? "warning" : "default"}
+        />
+        <StatTile
+          label="Vragen om actie (≤ 30 dagen)"
+          value={stats.needsAttention}
+          tone={stats.needsAttention > 0 ? "danger" : "default"}
+        />
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white">
-        <div className="border-b border-gray-100 px-4 py-3">
-          <h2 className="text-sm font-semibold text-gray-900">Per categorie</h2>
+      <Card>
+        <div className="border-b border-[#EEF0F5] px-5 py-3.5">
+          <h2 className="font-display text-sm font-bold text-[#12141C]">Per categorie</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-gray-500">
+            <thead className="bg-[#FAFBFD] text-[#8A93A3]">
               <tr>
-                <th className="px-4 py-2 font-medium">Categorie</th>
-                <th className="px-4 py-2 font-medium">Aantal</th>
-                <th className="px-4 py-2 font-medium">Totale waarde</th>
+                <th className="px-5 py-2.5 font-medium">Categorie</th>
+                <th className="px-5 py-2.5 font-medium">Aantal</th>
+                <th className="px-5 py-2.5 font-medium">Totale waarde</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-[#EEF0F5]">
               {stats.categories.map((category) => (
                 <tr key={category.type}>
-                  <td className="px-4 py-2 text-gray-900">{category.type}</td>
-                  <td className="px-4 py-2 text-gray-600">{category.count}</td>
-                  <td className="px-4 py-2 text-gray-600">{formatBedrag(category.value)}</td>
+                  <td className="px-5 py-2.5 text-[#12141C]">{category.type}</td>
+                  <td className="px-5 py-2.5 text-[#6B7383]">{category.count}</td>
+                  <td className="px-5 py-2.5 text-[#6B7383]">{formatBedrag(category.value)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -119,8 +122,14 @@ function ContractField({
 }) {
   return (
     <div className="min-w-[7rem]">
-      <p className="text-[11px] uppercase tracking-wide text-gray-400">{label}</p>
-      <p className={emphasize ? "text-sm font-medium text-gray-900" : "text-sm text-gray-600"}>
+      <p className="font-mono text-[11px] uppercase tracking-wide text-[#8A93A3]">{label}</p>
+      <p
+        className={
+          emphasize
+            ? "font-mono text-sm font-semibold text-[#12141C]"
+            : "text-sm text-[#6B7383]"
+        }
+      >
         {children}
       </p>
     </div>
@@ -129,8 +138,8 @@ function ContractField({
 
 function ContractRows({ contracts }: { contracts: Contract[] }) {
   return (
-    <div className="space-y-3">
-      {contracts.map((contract) => {
+    <Card className="overflow-hidden">
+      {contracts.map((contract, i) => {
         const status = getUrgencyStatus(contract.opzegdeadline);
         const style = URGENCY_STYLES[status];
 
@@ -138,16 +147,13 @@ function ContractRows({ contracts }: { contracts: Contract[] }) {
           <Link
             key={contract.id}
             href={`/contracts/${contract.id}`}
-            className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-gray-200 bg-white p-4 hover:bg-gray-50"
+            className={`flex flex-wrap items-center gap-x-6 gap-y-3 px-5 py-4 hover:bg-[#FAFBFD] ${
+              i !== contracts.length - 1 ? "border-b border-[#EEF0F5]" : ""
+            }`}
           >
-            <span
-              className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
-            >
-              <span className={`h-2 w-2 rounded-full ${style.dot}`} />
-              {style.label}
-            </span>
+            <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
 
-            <span className="flex min-w-[10rem] flex-1 items-center gap-1.5 font-medium text-gray-900">
+            <span className="flex min-w-[10rem] flex-1 items-center gap-1.5 font-medium text-[#12141C]">
               <span className="truncate">{contract.partij}</span>
               {!contract.gevalideerd && (
                 <span
@@ -172,10 +178,16 @@ function ContractRows({ contracts }: { contracts: Contract[] }) {
               {contract.verlengingswijze === "stilzwijgend" ? "Stilzwijgend" : "Actief"}
             </ContractField>
             <ContractField label="Waarde">{formatBedrag(contract.contractwaarde)}</ContractField>
+
+            <span
+              className={`inline-block shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${style.badge}`}
+            >
+              {style.label}
+            </span>
           </Link>
         );
       })}
-    </div>
+    </Card>
   );
 }
 
@@ -191,30 +203,33 @@ export default async function Home() {
     .order("opzegdeadline", { ascending: true })
     .returns<Contract[]>();
 
+  const naam = (user?.user_metadata?.naam as string | undefined) ?? user?.email ?? "";
+  const initials = naam
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10">
+    <main className="mx-auto w-full max-w-5xl px-4 py-9 sm:px-8">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Conq</h1>
-          <p className="text-sm text-gray-500">
-            Ingelogd als{" "}
-            {(user?.user_metadata?.naam as string | undefined) ?? user?.email}
-          </p>
-        </div>
+        <Logo />
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/contracts/new"
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-          >
+          <Link href="/contracts/new" className={primaryButtonClass}>
             + Nieuw contract
           </Link>
           <Link
             href="/account"
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-[10px] border-[1.5px] border-[#E4E7EF] bg-white px-4 py-2.5 text-sm font-semibold text-[#6B7383] hover:bg-[#FAFBFD]"
           >
             Account
           </Link>
           <SignOutButton />
+          <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-[#E4E7EF] bg-[#F0F1F6] text-[12.5px] font-semibold text-[#6B7383]">
+            {initials || "?"}
+          </div>
         </div>
       </div>
 
@@ -223,26 +238,42 @@ export default async function Home() {
       )}
 
       {!contracts || contracts.length === 0 ? (
-        <div className="flex flex-col items-center rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-2xl">
-            📄
+        <div className="flex flex-col items-center rounded-2xl border-[1.5px] border-dashed border-[#D6DAE4] bg-white p-14 text-center">
+          <div className="mb-5 flex h-[52px] w-[52px] items-center justify-center rounded-[13px] border border-[#E4E7EF] bg-[#F4F5F9]">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 16V4M12 4l-4 4M12 4l4 4"
+                stroke="#6D5EF5"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+                stroke="#6D5EF5"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
-          <h2 className="mb-1 text-base font-semibold text-gray-900">
+          <h2 className="mb-1 font-display text-base font-bold text-[#12141C]">
             Nog geen contracten
           </h2>
-          <p className="mb-6 max-w-sm text-sm text-gray-500">
+          <p className="mb-6 max-w-sm text-sm text-[#6B7383]">
             Voeg je eerste contract toe door een PDF te uploaden — Conq haalt de
             belangrijkste velden er automatisch uit, of vul ze handmatig in.
           </p>
-          <Link
-            href="/contracts/new"
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-          >
+          <Link href="/contracts/new" className={primaryButtonClass}>
             + Eerste contract toevoegen
           </Link>
         </div>
       ) : (
-        <ContractRows contracts={contracts} />
+        <>
+          <h1 className="mb-4 font-mono text-[12.5px] font-bold uppercase tracking-[.08em] text-[#8A93A3]">
+            Jouw contracten
+          </h1>
+          <ContractRows contracts={contracts} />
+        </>
       )}
     </main>
   );

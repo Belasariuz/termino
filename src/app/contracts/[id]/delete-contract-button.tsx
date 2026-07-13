@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { dangerButtonClass } from "@/components/ui";
 
 export function DeleteContractButton({
   contractId,
@@ -49,14 +50,10 @@ export function DeleteContractButton({
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <button
-        onClick={handleDelete}
-        disabled={deleting}
-        className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
-      >
+      <button onClick={handleDelete} disabled={deleting} className={dangerButtonClass}>
         {deleting ? "Bezig met verwijderen..." : "Contract verwijderen"}
       </button>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-[#DC2648]">{error}</p>}
     </div>
   );
 }

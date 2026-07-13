@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/contracts";
+import { BackLink, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui";
 
 type Confidence = {
   partij: number;
@@ -196,30 +197,51 @@ export default function NewContractPage() {
   }
 
   function fieldClass(field: keyof Confidence) {
-    const base =
-      "w-full rounded-md border px-3 py-2 text-sm focus:border-gray-900 focus:outline-none";
     if (confidence && confidence[field] < LOW_CONFIDENCE_THRESHOLD) {
-      return `${base} border-amber-400 bg-amber-50`;
+      return `${inputClass} !border-amber-400 !bg-amber-50`;
     }
-    return `${base} border-gray-300`;
+    return inputClass;
   }
 
   return (
-    <main className="mx-auto w-full max-w-xl px-4 py-10">
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Nieuw contract</h1>
-      <p className="mb-6 text-sm text-gray-500">
-        Upload een PDF om de velden automatisch te laten invullen, of vul ze handmatig in.
+    <main className="mx-auto w-full max-w-xl px-4 py-10 sm:px-8">
+      <BackLink href="/">Terug naar overzicht</BackLink>
+      <h1 className="mb-2 font-display text-2xl font-bold tracking-tight text-[#12141C]">
+        Contract toevoegen
+      </h1>
+      <p className="mb-7 text-sm text-[#6B7383]">
+        Upload het PDF-contract. Wij lezen de belangrijkste gegevens er automatisch
+        uit — jij controleert ze zo.
       </p>
 
       <label
         htmlFor="contract-pdf-input"
-        className={`mb-6 flex cursor-pointer flex-col items-center gap-1 rounded-md border border-dashed border-gray-300 bg-white p-6 text-center hover:bg-gray-50 ${
+        className={`mb-7 flex cursor-pointer flex-col items-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#D6DAE4] bg-white p-10 text-center hover:border-[#6D5EF5] hover:bg-[rgba(109,94,245,0.07)] ${
           extracting ? "pointer-events-none opacity-60" : ""
         }`}
       >
-        <span className="text-sm font-medium text-gray-700">Contract-PDF uploaden</span>
-        <span className="text-sm text-gray-500">
-          {fileName ?? "Klik om een PDF te kiezen"}
+        <div className="mb-4 flex h-[52px] w-[52px] items-center justify-center rounded-[13px] border border-[#E4E7EF] bg-[#F4F5F9]">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 16V4M12 4l-4 4M12 4l4 4"
+              stroke="#6D5EF5"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+              stroke="#6D5EF5"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+        <span className="text-[16px] font-semibold text-[#12141C]">
+          {fileName ?? "Sleep je contract-PDF hierheen"}
+        </span>
+        <span className="font-mono text-[13.5px] text-[#8A93A3]">
+          of klik om te kiezen · PDF, max 20MB
         </span>
         <input
           id="contract-pdf-input"
@@ -230,7 +252,7 @@ export default function NewContractPage() {
           className="sr-only"
         />
         {extracting && (
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-[#6B7383]">
             Bezig met analyseren van het contract...
           </p>
         )}
@@ -244,9 +266,7 @@ export default function NewContractPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Contractpartij
-          </label>
+          <label className={labelClass}>Contractpartij</label>
           <input
             required
             value={partij}
@@ -256,19 +276,17 @@ export default function NewContractPage() {
         </div>
 
         <div>
-          <div className="mb-1 flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700">
-              Contracttype
-            </label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className={labelClass + " !mb-0"}>Contracttype</label>
             <Link
               href="/categories"
-              className="text-xs text-gray-500 hover:text-gray-900 hover:underline"
+              className="text-xs text-[#6B7383] hover:text-[#12141C] hover:underline"
             >
               Categorieën beheren
             </Link>
           </div>
           {categoriesLoading ? (
-            <p className="text-sm text-gray-500">Bezig met laden...</p>
+            <p className="text-sm text-[#6B7383]">Bezig met laden...</p>
           ) : categories.length === 0 ? (
             <p className="text-sm text-amber-700">
               Je hebt nog geen categorieën.{" "}
@@ -295,9 +313,7 @@ export default function NewContractPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Begindatum
-            </label>
+            <label className={labelClass}>Begindatum</label>
             <input
               type="date"
               required
@@ -307,9 +323,7 @@ export default function NewContractPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Einddatum
-            </label>
+            <label className={labelClass}>Einddatum</label>
             <input
               type="date"
               required
@@ -322,9 +336,7 @@ export default function NewContractPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Opzegtermijn (dagen)
-            </label>
+            <label className={labelClass}>Opzegtermijn (dagen)</label>
             <input
               type="number"
               required
@@ -335,9 +347,7 @@ export default function NewContractPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Verlengingswijze
-            </label>
+            <label className={labelClass}>Verlengingswijze</label>
             <select
               required
               value={verlengingswijze}
@@ -353,9 +363,7 @@ export default function NewContractPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Contractwaarde (EUR, optioneel)
-          </label>
+          <label className={labelClass}>Contractwaarde (EUR, optioneel)</label>
           <input
             type="number"
             step="0.01"
@@ -366,7 +374,7 @@ export default function NewContractPage() {
         </div>
 
         {confidence && !reviewConfirmed && (
-          <div className="flex items-start justify-between gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          <div className="flex items-start justify-between gap-2 rounded-[11px] border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-800">
             <div className="flex items-start gap-2">
               <span aria-hidden>⚠️</span>
               <span>
@@ -385,20 +393,17 @@ export default function NewContractPage() {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-[#DC2648]">{error}</p>}
 
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
             disabled={saving || extracting || categories.length === 0}
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+            className={primaryButtonClass}
           >
             {saving ? "Bezig met opslaan..." : "Contract opslaan"}
           </button>
-          <a
-            href="/"
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
+          <a href="/" className={secondaryButtonClass}>
             Annuleren
           </a>
         </div>

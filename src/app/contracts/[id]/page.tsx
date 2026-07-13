@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUrgencyStatus, URGENCY_STYLES, type Contract } from "@/lib/contracts";
 import { DeleteContractButton } from "./delete-contract-button";
 import { ValidateButton } from "./validate-button";
+import { BackLink, Card, secondaryButtonClass } from "@/components/ui";
 
 function formatDatum(datum: string) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -83,43 +83,52 @@ export default async function ContractDetailPage({
     "contractwaarde",
   ];
 
-  return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
-      <Link href="/" className="mb-4 inline-block text-sm text-gray-500 hover:text-gray-900">
-        &larr; Terug naar dashboard
-      </Link>
+  const status = getUrgencyStatus(contract.opzegdeadline);
+  const style = URGENCY_STYLES[status];
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="min-w-0 truncate text-2xl font-semibold text-gray-900">
-          {contract.partij}
-        </h1>
-        <div className="flex flex-wrap items-center gap-3">
-          {pdfUrl && (
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Origineel PDF bekijken
-            </a>
-          )}
-          <Link
-            href={`/contracts/${contract.id}/edit`}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Bewerken
-          </Link>
-          <DeleteContractButton
-            contractId={contract.id}
-            contractPartij={contract.partij}
-            pdfPath={contract.pdf_url}
-          />
+  return (
+    <main className="mx-auto w-full max-w-3xl px-4 py-9 sm:px-8">
+      <BackLink href="/">Terug naar overzicht</BackLink>
+
+      <div className="mb-1 flex items-start justify-between gap-4">
+        <div>
+          <div className="mb-1.5 font-mono text-xs font-bold uppercase tracking-wide text-[#8A93A3]">
+            {contract.type}
+          </div>
+          <h1 className="min-w-0 truncate font-display text-2xl font-bold tracking-tight text-[#12141C] sm:text-[26px]">
+            {contract.partij}
+          </h1>
         </div>
+        <span
+          className={`inline-block shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold ${style.badge}`}
+        >
+          {style.label}
+        </span>
+      </div>
+
+      <div className="mb-6 mt-4 flex flex-wrap items-center gap-3">
+        {pdfUrl && (
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={secondaryButtonClass + " !px-3.5 !py-2 text-sm"}
+          >
+            Origineel PDF bekijken
+          </a>
+        )}
+        <a href={`/contracts/${contract.id}/edit`} className={secondaryButtonClass + " !px-3.5 !py-2 text-sm"}>
+          Bewerken
+        </a>
+        <DeleteContractButton
+          contractId={contract.id}
+          contractPartij={contract.partij}
+          pdfPath={contract.pdf_url}
+        />
       </div>
 
       {!contract.gevalideerd && (
-        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+        <div className="mb-6 flex items-center justify-between gap-3 rounded-[11px] border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-800">
           <span>
             ⚠️ Dit contract is nog niet gevalideerd — de gegevens zijn automatisch
             door AI ingevuld en nog niet expliciet gecontroleerd.
@@ -128,34 +137,49 @@ export default async function ContractDetailPage({
         </div>
       )}
 
-      <div className="mb-6 flex items-center justify-between rounded-md bg-white p-4 text-sm text-gray-600 shadow-sm">
-        <p>
-          Opzegdeadline: <span className="font-medium text-gray-900">{formatDatum(contract.opzegdeadline)}</span>
-        </p>
-        {(() => {
-          const status = getUrgencyStatus(contract.opzegdeadline);
-          const style = URGENCY_STYLES[status];
-          return (
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${style.badge}`}
-            >
-              <span className={`h-2 w-2 rounded-full ${style.dot}`} />
-              {style.label}
-            </span>
-          );
-        })()}
-      </div>
+      <Card className="mb-8 grid grid-cols-1 gap-x-7 gap-y-5 p-6 sm:grid-cols-2 sm:p-7">
+        <div>
+          <div className="mb-1 text-xs uppercase tracking-wide text-[#8A93A3]">Einddatum</div>
+          <div className="font-mono text-[15px] font-semibold text-[#12141C]">
+            {formatDatum(contract.einddatum)}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-xs uppercase tracking-wide text-[#8A93A3]">Opzegdeadline</div>
+          <div className="font-mono text-[15px] font-semibold text-[#12141C]">
+            {formatDatum(contract.opzegdeadline)}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-xs uppercase tracking-wide text-[#8A93A3]">Opzegtermijn</div>
+          <div className="text-[15px] font-semibold text-[#12141C]">
+            {contract.opzegtermijn_dagen} dagen
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-xs uppercase tracking-wide text-[#8A93A3]">Verlengingswijze</div>
+          <div className="text-[15px] font-semibold text-[#12141C]">
+            {contract.verlengingswijze === "stilzwijgend" ? "Stilzwijgend" : "Actief"}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-xs uppercase tracking-wide text-[#8A93A3]">Contractwaarde</div>
+          <div className="font-mono text-[15px] font-semibold text-[#12141C]">
+            {formatBedrag(contract.contractwaarde)}
+          </div>
+        </div>
+      </Card>
 
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">
+      <h2 className="mb-3 font-display text-lg font-bold text-[#12141C]">
         AI-verantwoording per veld
       </h2>
-      <p className="mb-4 text-sm text-gray-500">
+      <p className="mb-4 text-sm text-[#6B7383]">
         Hier zie je precies hoe de AI elk veld heeft bepaald: de gekozen waarde, de
         betrouwbaarheidsscore en een toelichting op basis van het brondocument.
       </p>
 
       {!contract.ai_confidence && !contract.ai_reasoning ? (
-        <div className="rounded-md border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500">
+        <div className="rounded-2xl border-[1.5px] border-dashed border-[#D6DAE4] bg-white p-6 text-center text-sm text-[#6B7383]">
           Dit contract is handmatig ingevoerd — er is geen AI-verantwoording beschikbaar.
         </div>
       ) : (
@@ -168,29 +192,29 @@ export default async function ContractDetailPage({
             return (
               <div
                 key={field}
-                className={`rounded-md border p-4 ${
-                  isLow ? "border-amber-400 bg-amber-50" : "border-gray-200 bg-white"
+                className={`rounded-[14px] border p-4 ${
+                  isLow ? "border-amber-400 bg-amber-50" : "border-[#E7E9F0] bg-white"
                 }`}
               >
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-[#12141C]">
                     {FIELD_LABELS[field]}
                   </span>
                   {typeof score === "number" && (
                     <span
                       className={`text-xs font-medium ${
-                        isLow ? "text-amber-700" : "text-gray-500"
+                        isLow ? "text-amber-700" : "text-[#8A93A3]"
                       }`}
                     >
                       Betrouwbaarheid: {Math.round(score * 100)}%
                     </span>
                   )}
                 </div>
-                <p className="mb-1 text-sm text-gray-700">
+                <p className="mb-1 text-sm text-[#3A3F4B]">
                   {formatFieldValue(contract, field)}
                 </p>
                 {explanation && (
-                  <p className="text-sm italic text-gray-500">{explanation}</p>
+                  <p className="text-sm italic text-[#8A93A3]">{explanation}</p>
                 )}
               </div>
             );

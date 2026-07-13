@@ -1,17 +1,19 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
+import { primaryButtonClass } from "@/components/ui";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 px-4 text-center">
-      <h1 className="text-2xl font-semibold text-gray-900">Pagina niet gevonden</h1>
-      <p className="max-w-sm text-sm text-gray-500">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-5 px-4 text-center">
+      <Logo />
+      <h1 className="font-display text-2xl font-bold tracking-tight text-[#12141C]">
+        Pagina niet gevonden
+      </h1>
+      <p className="max-w-sm text-sm text-[#6B7383]">
         Deze pagina bestaat niet, of het contract dat je zoekt is niet (meer)
         beschikbaar.
       </p>
-      <Link
-        href="/"
-        className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-      >
+      <Link href="/" className={primaryButtonClass}>
         Terug naar dashboard
       </Link>
     </main>

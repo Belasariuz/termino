@@ -20,7 +20,7 @@ export function ValidateButton({ contractId }: { contractId: string }) {
     <button
       onClick={handleValidate}
       disabled={saving}
-      className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+      className="rounded-[10px] bg-[#B4740E] px-3.5 py-2 text-sm font-semibold text-white hover:brightness-105 disabled:opacity-50"
     >
       {saving ? "Bezig..." : "Markeer als gevalideerd"}
     </button>

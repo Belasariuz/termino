@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { dangerButtonClass } from "@/components/ui";
 
 export function DeleteAccountButton() {
   const router = useRouter();
@@ -40,14 +41,10 @@ export function DeleteAccountButton() {
 
   return (
     <div>
-      <button
-        onClick={handleDelete}
-        disabled={deleting}
-        className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
-      >
+      <button onClick={handleDelete} disabled={deleting} className={dangerButtonClass}>
         {deleting ? "Bezig met verwijderen..." : "Account definitief verwijderen"}
       </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-[#DC2648]">{error}</p>}
     </div>
   );
 }

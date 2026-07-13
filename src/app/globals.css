@@ -1,20 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f8fb;
+  --foreground: #12141c;
   color-scheme: light;
+
+  --color-accent: #6d5ef5;
+  --color-accent-hover: #5847e0;
+  --color-accent-tint: rgba(109, 94, 245, 0.07);
+  --color-accent-icon-bg: rgba(109, 94, 245, 0.14);
+  --color-accent-border: rgba(109, 94, 245, 0.3);
+  --color-accent-shadow: rgba(109, 94, 245, 0.28);
+  --color-accent-glow: rgba(109, 94, 245, 0.07);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: radial-gradient(
+    circle at 15% 0%,
+    var(--color-accent-glow) 0%,
+    transparent 45%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif;
 }
