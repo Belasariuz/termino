@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/auth-shell";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui";
+import { TERMS_VERSION } from "@/lib/terms";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,6 +33,10 @@ export default function RegisterPage() {
       setErrorMessage("Het wachtwoord moet minimaal 6 tekens lang zijn.");
       return;
     }
+    if (!akkoord) {
+      setErrorMessage("Je moet akkoord gaan met de algemene voorwaarden.");
+      return;
+    }
 
     setStatus("sending");
 
@@ -44,6 +49,9 @@ export default function RegisterPage() {
         data: {
           naam,
           bedrijfsnaam: bedrijfsnaam || null,
+          algemene_voorwaarden_geaccepteerd: true,
+          algemene_voorwaarden_geaccepteerd_op: new Date().toISOString(),
+          algemene_voorwaarden_versie: TERMS_VERSION,
         },
       },
     });
@@ -150,7 +158,18 @@ export default function RegisterPage() {
               onChange={(e) => setAkkoord(e.target.checked)}
               className="mt-0.5 accent-[#6D5EF5]"
             />
-            <span>Ik ga akkoord met het gebruik van mijn gegevens door Conq.</span>
+            <span>
+              Ik ga akkoord met de{" "}
+              <a
+                href="https://conq.nl/algemene-voorwaarden.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#12141C] hover:underline"
+              >
+                algemene voorwaarden
+              </a>{" "}
+              van Conq, inclusief het gebruik van mijn gegevens.
+            </span>
           </label>
 
           <button type="submit" disabled={status === "sending"} className={primaryButtonClass + " w-full"}>
