@@ -184,6 +184,8 @@ export default function NewContractPage() {
       ai_confidence: confidence,
       ai_reasoning: reasoning,
       gevalideerd: confidence ? reviewConfirmed : true,
+      gevalideerd_op: confidence && reviewConfirmed ? new Date().toISOString() : null,
+      gevalideerd_door: confidence && reviewConfirmed ? user.id : null,
     });
 
     if (insertError) {
@@ -373,8 +375,8 @@ export default function NewContractPage() {
           />
         </div>
 
-        {confidence && !reviewConfirmed && (
-          <div className="flex items-start justify-between gap-2 rounded-[11px] border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-800">
+        {confidence && (
+          <div className="rounded-[11px] border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-800">
             <div className="flex items-start gap-2">
               <span aria-hidden>⚠️</span>
               <span>
@@ -383,13 +385,16 @@ export default function NewContractPage() {
                 ook later nog aanpassen via de contractpagina.
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => setReviewConfirmed(true)}
-              className="shrink-0 text-xs font-medium text-amber-700 underline hover:text-amber-900"
-            >
-              Verbergen
-            </button>
+            <label className="mt-3 flex items-start gap-2 border-t border-amber-200 pt-3 font-medium">
+              <input
+                type="checkbox"
+                required
+                checked={reviewConfirmed}
+                onChange={(e) => setReviewConfirmed(e.target.checked)}
+                className="mt-0.5 accent-amber-700"
+              />
+              <span>Ik heb de automatisch ingevulde velden gecontroleerd.</span>
+            </label>
           </div>
         )}
 
@@ -398,7 +403,12 @@ export default function NewContractPage() {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            disabled={saving || extracting || categories.length === 0}
+            disabled={
+              saving ||
+              extracting ||
+              categories.length === 0 ||
+              (confidence !== null && !reviewConfirmed)
+            }
             className={primaryButtonClass}
           >
             {saving ? "Bezig met opslaan..." : "Contract opslaan"}

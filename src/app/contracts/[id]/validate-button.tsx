@@ -11,7 +11,17 @@ export function ValidateButton({ contractId }: { contractId: string }) {
   async function handleValidate() {
     setSaving(true);
     const supabase = createClient();
-    await supabase.from("contracts").update({ gevalideerd: true }).eq("id", contractId);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    await supabase
+      .from("contracts")
+      .update({
+        gevalideerd: true,
+        gevalideerd_op: new Date().toISOString(),
+        gevalideerd_door: user?.id ?? null,
+      })
+      .eq("id", contractId);
     setSaving(false);
     router.refresh();
   }

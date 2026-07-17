@@ -21,6 +21,8 @@ export type Contract = {
   ai_confidence: Record<string, number> | null;
   ai_reasoning: Record<string, string> | null;
   gevalideerd: boolean;
+  gevalideerd_op: string | null;
+  gevalideerd_door: string | null;
   created_at: string;
 };
 

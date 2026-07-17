@@ -71,6 +71,9 @@ export default function EditContractPage() {
     setError(null);
 
     const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const { error: updateError } = await supabase
       .from("contracts")
       .update({
@@ -82,6 +85,8 @@ export default function EditContractPage() {
         verlengingswijze,
         contractwaarde: contractwaarde ? Number(contractwaarde) : null,
         gevalideerd: true,
+        gevalideerd_op: new Date().toISOString(),
+        gevalideerd_door: user?.id ?? null,
       })
       .eq("id", params.id);
 
