@@ -3,6 +3,7 @@ import { timingSafeEqual } from "crypto";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { opzegAlertHtml, opzegAlertOnderwerp } from "@/lib/contract-mail";
+import { logError } from "@/lib/error-log";
 import type { Contract } from "@/lib/contracts";
 
 export const runtime = "nodejs";
@@ -43,6 +44,7 @@ export async function GET(request: Request) {
     .returns<Contract[]>();
 
   if (contractsError) {
+    await logError("cron:check-deadlines", contractsError);
     return NextResponse.json({ error: contractsError.message }, { status: 500 });
   }
 
@@ -55,20 +57,39 @@ export async function GET(request: Request) {
 
     const { data: existingAlert } = await supabase
       .from("alerts")
-      .select("id, verzonden_op")
+      .select("id, status")
       .eq("contract_id", contract.id)
       .eq("type", type)
       .maybeSingle();
 
-    if (existingAlert?.verzonden_op) {
+    if (existingAlert?.status === "verzonden") {
       results.push({ contract_id: contract.id, type, status: "al verzonden" });
       continue;
+    }
+
+    async function upsertAlert(fields: {
+      status: "verzonden" | "mislukt" | "geen_email";
+      foutmelding: string | null;
+      ontvanger: string | null;
+      verzonden_op?: string;
+    }) {
+      if (existingAlert) {
+        await supabase.from("alerts").update(fields).eq("id", existingAlert.id);
+      } else {
+        await supabase.from("alerts").insert({
+          contract_id: contract.id,
+          trigger_datum: contract.opzegdeadline,
+          type,
+          ...fields,
+        });
+      }
     }
 
     const { data: authUser, error: authError } =
       await supabase.auth.admin.getUserById(contract.user_id);
 
     if (authError || !authUser?.user?.email) {
+      await upsertAlert({ status: "geen_email", foutmelding: null, ontvanger: null });
       results.push({ contract_id: contract.id, type, status: "geen e-mailadres" });
       continue;
     }
@@ -87,23 +108,25 @@ export async function GET(request: Request) {
     });
 
     if (sendError) {
+      await upsertAlert({
+        status: "mislukt",
+        foutmelding: sendError.message,
+        ontvanger: authUser.user.email,
+      });
+      await logError("cron:check-deadlines", sendError, {
+        contract_id: contract.id,
+        type,
+      });
       results.push({ contract_id: contract.id, type, status: `fout: ${sendError.message}` });
       continue;
     }
 
-    if (existingAlert) {
-      await supabase
-        .from("alerts")
-        .update({ verzonden_op: new Date().toISOString() })
-        .eq("id", existingAlert.id);
-    } else {
-      await supabase.from("alerts").insert({
-        contract_id: contract.id,
-        trigger_datum: contract.opzegdeadline,
-        type,
-        verzonden_op: new Date().toISOString(),
-      });
-    }
+    await upsertAlert({
+      status: "verzonden",
+      foutmelding: null,
+      ontvanger: authUser.user.email,
+      verzonden_op: new Date().toISOString(),
+    });
 
     results.push({ contract_id: contract.id, type, status: "verzonden" });
   }
