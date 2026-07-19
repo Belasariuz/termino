@@ -22,6 +22,16 @@ export async function POST() {
     await admin.storage.from("contracts").remove(paths);
   }
 
+  const { count } = await admin
+    .from("contracts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  await admin.from("customer_events").insert({
+    signed_up_at: user.created_at,
+    had_contracts: (count ?? 0) > 0,
+  });
+
   const { error } = await admin.auth.admin.deleteUser(user.id);
 
   if (error) {
