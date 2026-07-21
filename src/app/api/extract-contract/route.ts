@@ -153,10 +153,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("contracts").getPublicUrl(storagePath);
-
   try {
     const anthropic = new Anthropic();
     const response = await anthropic.messages.create({
@@ -196,12 +192,11 @@ export async function POST(request: Request) {
     return NextResponse.json({
       fields,
       pdf_url: storagePath,
-      pdf_public_url: publicUrl,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Onbekende fout bij AI-extractie.";
     return NextResponse.json(
-      { error: message, pdf_url: storagePath, pdf_public_url: publicUrl },
+      { error: message, pdf_url: storagePath },
       { status: 502 },
     );
   }
