@@ -120,8 +120,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Geen bestand ontvangen." }, { status: 400 });
   }
 
+  const MAX_FILE_SIZE = 20 * 1024 * 1024;
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json(
+      { error: "Het bestand is groter dan 20 MB." },
+      { status: 400 },
+    );
+  }
+
   const arrayBuffer = await file.arrayBuffer();
   const bytes = Buffer.from(arrayBuffer);
+
+  // Vertrouw niet op de MIME-type/bestandsnaam van de client: controleer de
+  // PDF-magic bytes zelf, zodat een willekeurig bestand niet als "PDF" wordt
+  // opgeslagen en naar de Anthropic API wordt gestuurd.
+  const isPdf = bytes.subarray(0, 5).toString("latin1") === "%PDF-";
+  if (!isPdf) {
+    return NextResponse.json(
+      { error: "Het bestand is geen geldig PDF-bestand." },
+      { status: 400 },
+    );
+  }
+
   const base64 = bytes.toString("base64");
 
   const storagePath = `${user.id}/${crypto.randomUUID()}-${file.name}`;
