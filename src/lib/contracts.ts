@@ -44,6 +44,22 @@ export function getUrgencyStatus(opzegdeadline: string): UrgencyStatus {
   return "rustig";
 }
 
+export function formatDatum(datum: string) {
+  return new Date(datum).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function formatBedrag(bedrag: number | null) {
+  if (bedrag === null) return "-";
+  return new Intl.NumberFormat("nl-NL", {
+    style: "currency",
+    currency: "EUR",
+  }).format(bedrag);
+}
+
 export const URGENCY_STYLES: Record<
   UrgencyStatus,
   { dot: string; badge: string; label: string }

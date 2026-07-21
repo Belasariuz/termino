@@ -1,25 +1,10 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
-import { getUrgencyStatus, URGENCY_STYLES, type Contract } from "@/lib/contracts";
+import { ContractList } from "./contract-list";
+import { formatBedrag, getUrgencyStatus, type Contract } from "@/lib/contracts";
 import { Logo } from "@/components/logo";
 import { Card, primaryButtonClass } from "@/components/ui";
-
-function formatDatum(datum: string) {
-  return new Date(datum).toLocaleDateString("nl-NL", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatBedrag(bedrag: number | null) {
-  if (bedrag === null) return "-";
-  return new Intl.NumberFormat("nl-NL", {
-    style: "currency",
-    currency: "EUR",
-  }).format(bedrag);
-}
 
 function computeStats(contracts: Contract[]) {
   const totalCount = contracts.length;
@@ -111,86 +96,6 @@ function StatsOverview({ stats }: { stats: ReturnType<typeof computeStats> }) {
   );
 }
 
-function ContractField({
-  label,
-  children,
-  emphasize,
-}: {
-  label: string;
-  children: React.ReactNode;
-  emphasize?: boolean;
-}) {
-  return (
-    <div className="min-w-[7rem]">
-      <p className="font-mono text-[11px] uppercase tracking-wide text-[#8A93A3]">{label}</p>
-      <p
-        className={
-          emphasize
-            ? "font-mono text-sm font-semibold text-[#12141C]"
-            : "text-sm text-[#6B7383]"
-        }
-      >
-        {children}
-      </p>
-    </div>
-  );
-}
-
-function ContractRows({ contracts }: { contracts: Contract[] }) {
-  return (
-    <Card className="overflow-hidden">
-      {contracts.map((contract, i) => {
-        const status = getUrgencyStatus(contract.opzegdeadline);
-        const style = URGENCY_STYLES[status];
-
-        return (
-          <Link
-            key={contract.id}
-            href={`/contracts/${contract.id}`}
-            className={`flex flex-wrap items-center gap-x-6 gap-y-3 px-5 py-4 hover:bg-[#FAFBFD] ${
-              i !== contracts.length - 1 ? "border-b border-[#EEF0F5]" : ""
-            }`}
-          >
-            <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
-
-            <span className="flex min-w-[10rem] flex-1 items-center gap-1.5 font-medium text-[#12141C]">
-              <span className="truncate">{contract.partij}</span>
-              {!contract.gevalideerd && (
-                <span
-                  className="shrink-0"
-                  title="Nog niet gevalideerd"
-                  aria-label="Nog niet gevalideerd"
-                >
-                  ⚠️
-                </span>
-              )}
-            </span>
-
-            <ContractField label="Type">{contract.type}</ContractField>
-            <ContractField label="Einddatum">{formatDatum(contract.einddatum)}</ContractField>
-            <ContractField label="Opzegtermijn">
-              {contract.opzegtermijn_dagen} dagen
-            </ContractField>
-            <ContractField label="Opzegdeadline" emphasize>
-              {formatDatum(contract.opzegdeadline)}
-            </ContractField>
-            <ContractField label="Verlenging">
-              {contract.verlengingswijze === "stilzwijgend" ? "Stilzwijgend" : "Actief"}
-            </ContractField>
-            <ContractField label="Waarde">{formatBedrag(contract.contractwaarde)}</ContractField>
-
-            <span
-              className={`inline-block shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${style.badge}`}
-            >
-              {style.label}
-            </span>
-          </Link>
-        );
-      })}
-    </Card>
-  );
-}
-
 export default async function Home() {
   const supabase = await createClient();
   const {
@@ -268,12 +173,7 @@ export default async function Home() {
           </Link>
         </div>
       ) : (
-        <>
-          <h1 className="mb-4 font-mono text-[12.5px] font-bold uppercase tracking-[.08em] text-[#8A93A3]">
-            Jouw contracten
-          </h1>
-          <ContractRows contracts={contracts} />
-        </>
+        <ContractList contracts={contracts} />
       )}
     </main>
   );
