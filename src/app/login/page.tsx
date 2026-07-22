@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/auth-shell";
+import { GoogleAuthSection } from "@/components/google-auth-section";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui";
 
 export default function LoginPage() {
@@ -19,15 +20,16 @@ export default function LoginPage() {
     setStatus("sending");
     setErrorMessage(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: wachtwoord,
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, wachtwoord }),
     });
+    const data = await res.json();
 
-    if (error) {
+    if (!res.ok) {
       setStatus("error");
-      setErrorMessage("E-mailadres of wachtwoord onjuist.");
+      setErrorMessage(data.error ?? "Inloggen is mislukt.");
       return;
     }
 
@@ -87,6 +89,8 @@ export default function LoginPage() {
           <p className="text-sm text-[#DC2648]">{errorMessage}</p>
         )}
       </form>
+
+      <GoogleAuthSection />
     </AuthShell>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/auth-shell";
+import { GoogleAuthSection } from "@/components/google-auth-section";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui";
 import { TERMS_VERSION } from "@/lib/terms";
 
@@ -178,6 +179,8 @@ export default function RegisterPage() {
           {errorMessage && <p className="text-sm text-[#DC2648]">{errorMessage}</p>}
         </form>
       )}
+
+      {status !== "sent" && <GoogleAuthSection />}
     </AuthShell>
   );
 }
