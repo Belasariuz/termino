@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/auth-shell";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui";
+import { PASSWORD_MIN_LENGTH, validatePassword } from "@/lib/password";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -21,8 +22,9 @@ export default function ResetPasswordPage() {
       setError("De wachtwoorden komen niet overeen.");
       return;
     }
-    if (wachtwoord.length < 6) {
-      setError("Het wachtwoord moet minimaal 6 tekens lang zijn.");
+    const wachtwoordFout = validatePassword(wachtwoord);
+    if (wachtwoordFout) {
+      setError(wachtwoordFout);
       return;
     }
 
@@ -54,18 +56,21 @@ export default function ResetPasswordPage() {
           <input
             type="password"
             required
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
             value={wachtwoord}
             onChange={(e) => setWachtwoord(e.target.value)}
             className={inputClass}
           />
+          <p className="mt-1.5 text-xs text-[#8A93A3]">
+            Minimaal {PASSWORD_MIN_LENGTH} tekens, met hoofdletters, kleine letters en een cijfer.
+          </p>
         </div>
         <div>
           <label className={labelClass}>Wachtwoord bevestigen</label>
           <input
             type="password"
             required
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
             value={wachtwoordBevestigen}
             onChange={(e) => setWachtwoordBevestigen(e.target.value)}
             className={inputClass}

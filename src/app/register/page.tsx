@@ -8,6 +8,7 @@ import { AuthShell } from "@/components/auth-shell";
 import { GoogleAuthSection } from "@/components/google-auth-section";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui";
 import { TERMS_VERSION } from "@/lib/terms";
+import { PASSWORD_MIN_LENGTH, validatePassword } from "@/lib/password";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,8 +31,9 @@ export default function RegisterPage() {
       setErrorMessage("De wachtwoorden komen niet overeen.");
       return;
     }
-    if (wachtwoord.length < 6) {
-      setErrorMessage("Het wachtwoord moet minimaal 6 tekens lang zijn.");
+    const wachtwoordFout = validatePassword(wachtwoord);
+    if (wachtwoordFout) {
+      setErrorMessage(wachtwoordFout);
       return;
     }
     if (!akkoord) {
@@ -132,11 +134,14 @@ export default function RegisterPage() {
             <input
               type="password"
               required
-              minLength={6}
+              minLength={PASSWORD_MIN_LENGTH}
               value={wachtwoord}
               onChange={(e) => setWachtwoord(e.target.value)}
               className={inputClass}
             />
+            <p className="mt-1.5 text-xs text-[#8A93A3]">
+              Minimaal {PASSWORD_MIN_LENGTH} tekens, met hoofdletters, kleine letters en een cijfer.
+            </p>
           </div>
 
           <div>
@@ -144,7 +149,7 @@ export default function RegisterPage() {
             <input
               type="password"
               required
-              minLength={6}
+              minLength={PASSWORD_MIN_LENGTH}
               value={wachtwoordBevestigen}
               onChange={(e) => setWachtwoordBevestigen(e.target.value)}
               className={inputClass}
