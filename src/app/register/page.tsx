@@ -180,7 +180,7 @@ export default function RegisterPage() {
         </form>
       )}
 
-      {status !== "sent" && <GoogleAuthSection />}
+      {status !== "sent" && <GoogleAuthSection akkoord={akkoord} />}
     </AuthShell>
   );
 }

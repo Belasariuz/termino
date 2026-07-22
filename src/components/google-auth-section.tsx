@@ -28,8 +28,16 @@ function GoogleIcon() {
   );
 }
 
-export function GoogleAuthSection() {
-  const [akkoord, setAkkoord] = useState(false);
+interface GoogleAuthSectionProps {
+  // Wanneer meegegeven, moet dit true zijn voordat er met Google
+  // ingelogd/geregistreerd kan worden (gedeeld met de akkoord-checkbox
+  // van het formulier zelf). Zonder deze prop wordt geen akkoordvereiste
+  // getoond (bijv. op de inlogpagina).
+  akkoord?: boolean;
+}
+
+export function GoogleAuthSection({ akkoord }: GoogleAuthSectionProps) {
+  const requiresConsent = akkoord !== undefined;
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -56,31 +64,10 @@ export function GoogleAuthSection() {
         <div className="h-px flex-1 bg-[#E4E7EF]" />
       </div>
 
-      <label className="mb-3 flex items-start gap-2 text-sm text-[#6B7383]">
-        <input
-          type="checkbox"
-          checked={akkoord}
-          onChange={(e) => setAkkoord(e.target.checked)}
-          className="mt-0.5 accent-[#6D5EF5]"
-        />
-        <span>
-          Ik ga akkoord met de{" "}
-          <a
-            href="https://conq.nl/algemene-voorwaarden.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-[#12141C] hover:underline"
-          >
-            algemene voorwaarden
-          </a>{" "}
-          van Conq, inclusief het gebruik van mijn gegevens.
-        </span>
-      </label>
-
       <button
         type="button"
         onClick={handleClick}
-        disabled={!akkoord || loading}
+        disabled={(requiresConsent && !akkoord) || loading}
         className={secondaryButtonClass + " flex w-full items-center justify-center gap-2"}
       >
         <GoogleIcon />
